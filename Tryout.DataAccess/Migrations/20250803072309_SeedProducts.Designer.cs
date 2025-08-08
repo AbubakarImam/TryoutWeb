@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tryout.DataAccess.Data;
 
@@ -10,9 +11,11 @@ using Tryout.DataAccess.Data;
 namespace Tryout.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250803072309_SeedProducts")]
+    partial class SeedProducts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,9 +73,6 @@ namespace Tryout.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -82,10 +82,6 @@ namespace Tryout.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IMDBId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -107,19 +103,15 @@ namespace Tryout.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            CategoryId = 1,
                             Description = "A mind-bending journey through time and memory, where every decision changes the future. Intricately woven narrative that challenges perception.",
                             Director = "Christopher Nolan",
                             IMDBId = "IMD12345601",
-                            ImageUrl = "",
                             ListPrice = 120.0,
                             Price = 110.0,
                             Price100 = 90.0,
@@ -129,11 +121,9 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 2,
-                            CategoryId = 2,
                             Description = "An emotional sci-fi drama exploring isolation and humanity’s survival on a distant silent planet. Rich visuals and deep character arcs.",
                             Director = "Patricia Jenkins",
                             IMDBId = "IMD12345602",
-                            ImageUrl = "",
                             ListPrice = 95.0,
                             Price = 85.0,
                             Price100 = 70.0,
@@ -143,11 +133,9 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 3,
-                            CategoryId = 1,
                             Description = "A high-octane cyberpunk thriller set in a city where neon lights hide dark secrets. Fast-paced and visually immersive.",
                             Director = "Ryan Coogler",
                             IMDBId = "IMD12345603",
-                            ImageUrl = "",
                             ListPrice = 100.0,
                             Price = 90.0,
                             Price100 = 75.0,
@@ -157,11 +145,9 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 4,
-                            CategoryId = 3,
                             Description = "A haunting mystery thriller unraveling a ghost story in a quiet seaside town. Gripping from start to finish with stunning cinematography.",
                             Director = "Greta Gerwig",
                             IMDBId = "IMD12345604",
-                            ImageUrl = "",
                             ListPrice = 80.0,
                             Price = 70.0,
                             Price100 = 60.0,
@@ -171,11 +157,9 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 5,
-                            CategoryId = 3,
                             Description = "An epic space battle saga that blends stunning VFX with a tale of resistance and legacy. Perfect for action and sci-fi lovers.",
                             Director = "James Cameron",
                             IMDBId = "IMD12345605",
-                            ImageUrl = "",
                             ListPrice = 110.0,
                             Price = 100.0,
                             Price100 = 85.0,
@@ -185,28 +169,15 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 6,
-                            CategoryId = 2,
                             Description = "A poetic drama that explores love, grief, and memory across generations, beautifully captured in slow, moody frames.",
                             Director = "Sofia Coppola",
                             IMDBId = "IMD12345606",
-                            ImageUrl = "",
                             ListPrice = 70.0,
                             Price = 65.0,
                             Price100 = 55.0,
                             Price50 = 60.0,
                             Title = "Velvet Ashes"
                         });
-                });
-
-            modelBuilder.Entity("Tryout.Models.Product", b =>
-                {
-                    b.HasOne("Tryout.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }
