@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Tryout.DataAccess.Data;
 using Tryout.DataAccess.Repository;
 using Tryout.DataAccess.Repository.IRepository;
 using Tryout.Models;
+using Tryout.Utility;
 
 namespace Tryout.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
     public class CategoryController : Controller
     {
 
