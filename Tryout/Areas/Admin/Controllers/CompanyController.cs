@@ -26,15 +26,16 @@ namespace Tryout.Areas.Admin.Controllers
             public IActionResult Upsert(int? id)
             {
                 
-                Company company = new();
                 if(id == null || id == 0)
                 {
-                    return View(company);
+                Company company = new();
+
+                return View(company);
                 }
                 else
                 {
                     //Update
-                    company = _unitOfWork.Company.Get(u => u.Id==id);
+                   var  company = _unitOfWork.Company.Get(u => u.Id==id);
                     if (company == null)
                     {
                         return NotFound();
@@ -67,82 +68,6 @@ namespace Tryout.Areas.Admin.Controllers
             }
             return View(obj);
         }
-
-        //public IActionResult Create()
-        //    {
-        //        return View();
-        //    }
-        //    [HttpPost]
-        //    public IActionResult Create(Company obj)
-        //    {
-                
-        //        if (ModelState.IsValid)
-        //        {
-        //            _unitOfWork.Company.Add(obj);
-        //            _unitOfWork.Save();
-        //            TempData["success"] = "Company created succesfully";
-        //            return RedirectToAction("Index");
-
-        //        }
-        //        return View();
-        //    }
-        //    public IActionResult Edit(int? id)
-        //    {
-        //        if (id == null || id == 0)
-        //        {
-        //            return NotFound();
-        //        }
-        //        Company? companyFromDb = _unitOfWork.Company.Get(u => u.Id==id);
-        //        //Category categpryFromDb1 = _db.Categories.FirstOrDefault(u=>u.Id==id);
-        //        //Category categpryFromDb2 = _db.Categories.Where(u=>u.Id==id).FirstOrDefault();
-        //        if (companyFromDb == null)
-        //        {
-        //            return NotFound();
-        //        }
-        //        return View(companyFromDb);
-        //    }
-        //    [HttpPost]
-        //    public IActionResult Edit(Company obj)
-        //    {
-
-        //        if (ModelState.IsValid)
-        //        {
-        //            _unitOfWork.Company.Update(obj);
-        //            _unitOfWork.Save();
-        //            TempData["success"] = "Company updated successfully";
-
-        //            return RedirectToAction("Index");
-
-        //        }
-        //        return View();
-        //    }
-            //public IActionResult Delete(int? id)
-            //{
-            //    if (id == null || id == 0)
-            //    {
-            //        return NotFound();
-            //    }
-            //    Company? companyFromDb = _unitOfWork.Company.Get(u => u.Id==id);
-            //    if (companyFromDb == null)
-            //    {
-            //        return NotFound();
-            //    }
-            //    return View(companyFromDb);
-            //}
-            //[HttpPost, ActionName("Delete")]
-            //public IActionResult DeletePOst(int? id)
-            //{
-            //    Company? obj = _unitOfWork.Company.Get(u => u.Id==id);
-            //    if (obj == null)
-            //    {
-            //        return NotFound();
-            //    }
-            //    _unitOfWork.Company.Remove(obj);
-            //    _unitOfWork.Save();
-            //    TempData["success"] = "Company deleted successfully";
-
-            //    return RedirectToAction("Index");
-            //}
 
         #region API CALLS
         [HttpGet]
