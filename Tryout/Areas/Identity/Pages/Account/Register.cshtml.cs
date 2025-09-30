@@ -169,6 +169,7 @@ namespace Tryout.Areas.Identity.Pages.Account
                 user.PostalCode = Input.PostalCode;
                 user.PhoneNumber = Input.PhoneNumber;
                 user.Name = Input.Name;
+                user.State = Input.State;
 
                 if(Input.Role == SD.Role_Company)
                 {

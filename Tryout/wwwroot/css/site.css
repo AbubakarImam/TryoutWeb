@@ -1,6 +1,10 @@
 /* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+main.pb-3 {
+    padding-bottom: 70px !important; /* or 80px — match your footer height */
+}
+
 .divider-text:before,
 .divider-text:after {
     color: white;
