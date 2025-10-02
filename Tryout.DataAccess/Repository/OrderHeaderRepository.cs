@@ -21,5 +21,37 @@ namespace Tryout.DataAccess.Repository
         {
             _db.OrderHeaders.Update(obj);
         }
+
+
+        public void UpdateStatus(int Id, string orderStatus, string paymentStatus)
+        {
+            var orderHeaderFromDb = _db.OrderHeaders.FirstOrDefault(o => o.Id == Id);
+            if (orderHeaderFromDb != null)
+            {
+                orderHeaderFromDb.OrderStatus = orderStatus;
+
+                if (!string.IsNullOrEmpty(paymentStatus))
+                {
+                    orderHeaderFromDb.PaymentStatus = paymentStatus;
+
+                }
+                //_db.OrderHeaders.Update(orderHeader);
+            }
+        }
+
+        public void UpdatePaymentReference(int Id, string reference)
+        {
+            var orderHeaderFromDb = _db.OrderHeaders.FirstOrDefault(o => o.Id == Id);
+            if (orderHeaderFromDb != null)
+            {
+                if (!string.IsNullOrEmpty(reference))
+                {
+                    orderHeaderFromDb.PaymentReference = reference;
+                    orderHeaderFromDb.PaymentDate = DateTime.Now;
+
+                }
+            }
+        }
+
     }
 }
