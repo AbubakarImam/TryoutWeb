@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using PayStack.Net;
 using System.Security.Claims;
 using Tryout.DataAccess.Repository.IRepository;
 using Tryout.Models;
@@ -13,11 +15,13 @@ namespace Tryout.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly PaystackSetting _paystackSetting;
         [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
-        public CartController(IUnitOfWork unitOfWork)
+        public CartController(IUnitOfWork unitOfWork, IOptions<PaystackSetting> paystackSetting)
         {
             _unitOfWork=unitOfWork;
+            _paystackSetting = paystackSetting.Value;
         }
 
         public IActionResult Index()
@@ -117,8 +121,49 @@ namespace Tryout.Areas.Customer.Controllers
             if(applicationUser.CompanyId.GetValueOrDefault() == 0)
             {
                 //If Its A Regular Customer
-                //Stripe Payment Logic
-               
+
+
+                // === PAYSTACK Initialization ===
+
+                // Use PayStack.Net wrapper
+                var paystack = new PayStackApi(_paystackSetting.SecretKey);
+
+                // Paystack expects amount in kobo (if currency is NGN). Adjust as per your currency:
+                // If you are using USD in Stripe flow earlier, and want to use NGN on Paystack, convert accordingly.
+                // Here we assume NGN: multiply by 100 to convert naira -> kobo
+                var amountInKobo = (int)Math.Round(ShoppingCartVM.OrderHeader.OrderTotal * 100);
+
+                var reference = $"ORD_{ShoppingCartVM.OrderHeader.Id}_{DateTime.Now.Ticks}";
+                
+                var domain = $"{Request.Scheme}://{Request.Host.Value}/";
+
+                var initializeRequest = new TransactionInitializeRequest
+                {
+                    AmountInKobo = amountInKobo,
+                    Email = applicationUser.Email,
+                    Reference = reference,
+                    CallbackUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}"
+                };
+
+                var initializeResponse = paystack.Transactions.Initialize(initializeRequest);
+
+                if (initializeResponse.Status && initializeResponse.Data != null)
+                {
+                    // Save Paystack reference in DB so we can verify later
+                    _unitOfWork.OrderHeader.UpdatePaymentReference(ShoppingCartVM.OrderHeader.Id, initializeResponse.Data.Reference);
+                    _unitOfWork.Save();
+
+                    // Redirect customer to Paystack payment page
+                    Response.Headers.Add("Location", initializeResponse.Data.AuthorizationUrl);
+                    return new StatusCodeResult(303);
+                }
+                else
+                {
+                    // handle failed init
+                    TempData["error"] = "Payment initialization failed. Please try again.";
+                    return RedirectToAction(nameof(Summary));
+                }
+
             }
 
             return RedirectToAction(nameof(OrderConfirmation), new { id = ShoppingCartVM.OrderHeader.Id });
@@ -126,7 +171,57 @@ namespace Tryout.Areas.Customer.Controllers
 
         public IActionResult OrderConfirmation(int id)
         {
-            return View(id);
+            // load order header
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id);
+
+            if (orderHeader == null)
+                return NotFound();
+
+            // If order was delayed/company we already approved earlier
+            if (orderHeader.PaymentStatus == SD.PaymentStatusDelayedPayment)
+            {
+                // clear cart, send email etc, same as before
+                // Clear session and cart items
+                var shoppingCarts = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+                _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+                _unitOfWork.Save();
+
+                return View(id);
+            }
+
+            // Verify payment using Paystack (use saved PaymentReference)
+            var paystack = new PayStackApi(_paystackSetting.SecretKey);
+            var reference = orderHeader.PaymentReference;
+            if (string.IsNullOrEmpty(reference))
+            {
+                // nothing to verify
+                TempData["error"] = "Payment reference is missing.";
+                return View(id);
+            }
+
+            var verifyResponse = paystack.Transactions.Verify(reference);
+            if (verifyResponse.Status && verifyResponse.Data.Status == "success")
+            {
+                // mark paid
+                _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                _unitOfWork.Save();
+
+                // clear cart items and session
+                var shoppingCarts = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+                _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+                _unitOfWork.Save();
+
+                // optionally send email
+                // _emailSender.SendEmailAsync(...);
+
+                return View(id);
+            }
+            else
+            {
+                // payment failed / pending
+                TempData["error"] = "Payment verification failed or pending.";
+                return View(id);
+            }
         }
 
         public IActionResult Plus(int cartId)

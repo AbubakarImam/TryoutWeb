@@ -10,5 +10,7 @@ namespace Tryout.DataAccess.Repository.IRepository
     public interface IOrderHeaderRepository : IRepository<OrderHeader>
     {
         void Update(OrderHeader obj);
+        void UpdatePaymentReference(int Id, string reference);
+        void UpdateStatus(int Id, string orderStatus, string? paymentStatus = null);
     }
 }
