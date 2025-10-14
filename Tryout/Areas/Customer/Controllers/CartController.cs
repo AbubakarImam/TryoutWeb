@@ -129,7 +129,6 @@ namespace Tryout.Areas.Customer.Controllers
                 var paystack = new PayStackApi(_paystackSetting.SecretKey);
 
                 // Paystack expects amount in kobo (if currency is NGN). Adjust as per your currency:
-                // If you are using USD in Stripe flow earlier, and want to use NGN on Paystack, convert accordingly.
                 // Here we assume NGN: multiply by 100 to convert naira -> kobo
                 var amountInKobo = (int)Math.Round(ShoppingCartVM.OrderHeader.OrderTotal * 100);
 
@@ -172,7 +171,7 @@ namespace Tryout.Areas.Customer.Controllers
         public IActionResult OrderConfirmation(int id)
         {
             // load order header
-            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id);
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
 
             if (orderHeader == null)
                 return NotFound();

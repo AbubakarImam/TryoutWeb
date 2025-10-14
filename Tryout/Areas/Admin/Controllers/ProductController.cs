@@ -107,68 +107,6 @@ namespace Tryout.Areas.Admin.Controllers
             }
         }
 
-        // GET: /Admin/Product/Edit/5
-        //public IActionResult Edit(int? id)
-        //{
-        //    if (id == null || id == 0)
-        //        return NotFound();
-
-        //    var product = _unitOfWork.Product.Get(p => p.Id == id);
-        //    if (product == null)
-        //        return NotFound();
-
-        //    return View(product);
-        //}
-
-        //// POST: /Admin/Product/Edit
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public IActionResult Edit(Product product)
-        //{
-        //    if (product.Title == product.Description)
-        //    {
-        //        ModelState.AddModelError("Title", "The description cannot exactly match the title.");
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        _unitOfWork.Product.Update(product);
-        //        _unitOfWork.Save();
-        //        TempData["success"] = "Product updated successfully!";
-        //        return RedirectToAction(nameof(Index));
-        //    }
-
-        //    return View(product);
-        //}
-
-        // GET: /Admin/Product/Delete/5
-        //public IActionResult Delete(int? id)
-        //{
-        //    if (id == null || id == 0)
-        //        return NotFound();
-
-        //    var product = _unitOfWork.Product.Get(p => p.Id == id);
-        //    if (product == null)
-        //        return NotFound();
-
-        //    return View(product);
-        //}
-
-        //// POST: /Admin/Product/Delete
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public IActionResult DeletePost(int? id)
-        //{
-        //    var product = _unitOfWork.Product.Get(p => p.Id == id);
-        //    if (product == null)
-        //        return NotFound();
-
-        //    _unitOfWork.Product.Remove(product);
-        //    _unitOfWork.Save();
-        //    TempData["success"] = "Product deleted successfully!";
-        //    return RedirectToAction(nameof(Index));
-        //}
-
         #region API CALLS
         [HttpGet]
         public IActionResult GetAll()
