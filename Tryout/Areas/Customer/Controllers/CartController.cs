@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PayStack.Net;
@@ -14,14 +16,16 @@ namespace Tryout.Areas.Customer.Controllers
     [Authorize]
     public class CartController : Controller
     {
+        private readonly IEmailSender _emailSender;
         private readonly IUnitOfWork _unitOfWork;
         private readonly PaystackSetting _paystackSetting;
         [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
-        public CartController(IUnitOfWork unitOfWork, IOptions<PaystackSetting> paystackSetting)
+        public CartController(IUnitOfWork unitOfWork, IEmailSender emailSender, IOptions<PaystackSetting> paystackSetting)
         {
             _unitOfWork=unitOfWork;
             _paystackSetting = paystackSetting.Value;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -31,12 +35,16 @@ namespace Tryout.Areas.Customer.Controllers
 
             ShoppingCartVM = new()
             {
-                ShoppingCartList = _unitOfWork.ShoppingCart.GetAll(u=>u.ApplicationUserId == userId,
+                ShoppingCartList = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId,
                 includeProperties: "Product"),
                 OrderHeader = new()
             };
-            foreach(var cart in ShoppingCartVM.ShoppingCartList)
+
+            IEnumerable<ProductImage> productImages = _unitOfWork.ProductImage.GetAll();
+
+            foreach (var cart in ShoppingCartVM.ShoppingCartList)
             {
+                cart.Product.ProductImages = productImages.Where(u => u.ProductId == cart.Product.Id).ToList();
                 cart.Price = GetPriceBasedOnQuantity(cart);
                 ShoppingCartVM.OrderHeader.OrderTotal += cart.Price * cart.Count;
             }
@@ -54,7 +62,7 @@ namespace Tryout.Areas.Customer.Controllers
                 includeProperties: "Product"),
                 OrderHeader = new()
             };
-            ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.Get(u=>u.Id == userId);
+            ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
 
             ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.Name;
             ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
@@ -83,15 +91,15 @@ namespace Tryout.Areas.Customer.Controllers
                 includeProperties: "Product");
             ShoppingCartVM.OrderHeader.OrderDate = System.DateTime.Now;
             ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
-      
-            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.Get(u=>u.Id == userId);
+
+            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
 
             foreach (var cart in ShoppingCartVM.ShoppingCartList)
             {
                 cart.Price = GetPriceBasedOnQuantity(cart);
                 ShoppingCartVM.OrderHeader.OrderTotal += cart.Price * cart.Count;
             }
-            if(applicationUser.CompanyId.GetValueOrDefault() == 0)
+            if (applicationUser.CompanyId.GetValueOrDefault() == 0)
             {
                 //Regular Customer
                 ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
@@ -107,7 +115,8 @@ namespace Tryout.Areas.Customer.Controllers
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
             _unitOfWork.Save();
 
-            foreach(var cart in ShoppingCartVM.ShoppingCartList) {
+            foreach (var cart in ShoppingCartVM.ShoppingCartList)
+            {
                 OrderDetail orderDetail = new OrderDetail()
                 {
                     ProductId = cart.ProductId,
@@ -118,7 +127,7 @@ namespace Tryout.Areas.Customer.Controllers
                 _unitOfWork.OrderDetail.Add(orderDetail);
                 _unitOfWork.Save();
             }
-            if(applicationUser.CompanyId.GetValueOrDefault() == 0)
+            if (applicationUser.CompanyId.GetValueOrDefault() == 0)
             {
                 //If Its A Regular Customer
 
@@ -133,7 +142,7 @@ namespace Tryout.Areas.Customer.Controllers
                 var amountInKobo = (int)Math.Round(ShoppingCartVM.OrderHeader.OrderTotal * 100);
 
                 var reference = $"ORD_{ShoppingCartVM.OrderHeader.Id}_{DateTime.Now.Ticks}";
-                
+
                 var domain = $"{Request.Scheme}://{Request.Host.Value}/";
 
                 var initializeRequest = new TransactionInitializeRequest
@@ -168,7 +177,7 @@ namespace Tryout.Areas.Customer.Controllers
             return RedirectToAction(nameof(OrderConfirmation), new { id = ShoppingCartVM.OrderHeader.Id });
         }
 
-        public IActionResult OrderConfirmation(int id)
+        public async Task<IActionResult> OrderConfirmation(int id)
         {
             // load order header
             OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
@@ -187,6 +196,8 @@ namespace Tryout.Areas.Customer.Controllers
 
                 return View(id);
             }
+            HttpContext.Session.Clear();
+
 
             // Verify payment using Paystack (use saved PaymentReference)
             var paystack = new PayStackApi(_paystackSetting.SecretKey);
@@ -210,8 +221,28 @@ namespace Tryout.Areas.Customer.Controllers
                 _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
                 _unitOfWork.Save();
 
-                // optionally send email
-                // _emailSender.SendEmailAsync(...);
+                // ✅ Send confirmation email
+                string subject = $"Your Order #{orderHeader.Id} has been placed successfully!";
+                string body = $@"
+<div style='text-align:center;'>
+        <img src='https://res.cloudinary.com/dzl44lobc/image/upload/v1761965012/kamshiLogo_nxgi0y.svg' alt='Kamshi Store Logo' style='width:150px; height:auto;' />
+    </div>
+            <h2>Thank you for shopping with Kamshi Store!</h2>
+            <p>Hi {orderHeader.ApplicationUser.Name},</p>
+            <p>Your order <strong>#{orderHeader.Id}</strong> has been confirmed and is now being processed.</p>
+            <p><strong>Order Summary:</strong></p>
+            <ul>
+                {string.Join("", _unitOfWork.OrderDetail.GetAll(u => u.OrderHeaderId == id, includeProperties: "Product")
+                            .Select(d => $"<li>{d.Product?.Title ?? "Unknown"} - {d.Count} x {d.Price:C}</li>"))}
+            </ul>
+            <p><strong>Total:</strong> {orderHeader.OrderTotal:C}</p>
+            <p>We'll send you another email once your order ships.</p>
+            <br/>
+            <p>❤️ Kamshi Store</p>
+        ";
+
+                await _emailSender.SendEmailAsync(subject, orderHeader.ApplicationUser.Email, body);
+
 
                 return View(id);
             }
@@ -225,7 +256,7 @@ namespace Tryout.Areas.Customer.Controllers
 
         public IActionResult Plus(int cartId)
         {
-            var cartFromDb = _unitOfWork.ShoppingCart.Get(u=>u.Id==cartId);
+            var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.Id==cartId);
             cartFromDb.Count+=1;
             _unitOfWork.ShoppingCart.Update(cartFromDb);
             _unitOfWork.Save();
@@ -233,10 +264,12 @@ namespace Tryout.Areas.Customer.Controllers
         }
         public IActionResult Minus(int cartId)
         {
-            var cartFromDb = _unitOfWork.ShoppingCart.Get(u=>u.Id==cartId);
+            var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.Id==cartId, tracked: true);
             if (cartFromDb.Count<=1)
             {
                 //Remove Item From Cart
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll
+                (u => u.ApplicationUserId == cartFromDb.ApplicationUserId).Count()-1);
                 _unitOfWork.ShoppingCart.Remove(cartFromDb);
 
             }
@@ -251,7 +284,9 @@ namespace Tryout.Areas.Customer.Controllers
         }
         public IActionResult Remove(int cartId)
         {
-            var cartFromDb = _unitOfWork.ShoppingCart.Get(u=>u.Id==cartId);
+            var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.Id==cartId, tracked: true);
+            HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll
+                (u => u.ApplicationUserId == cartFromDb.ApplicationUserId).Count()-1);
             _unitOfWork.ShoppingCart.Remove(cartFromDb);
             _unitOfWork.Save();
             return RedirectToAction(nameof(Index));
@@ -260,16 +295,14 @@ namespace Tryout.Areas.Customer.Controllers
 
         private double GetPriceBasedOnQuantity(ShoppingCart shoppingCart)
         {
-            if (shoppingCart.Count <= 50)
+            return shoppingCart.UnitType.ToLower() switch
             {
-                return shoppingCart.Product.Price;
-            } else
-            {
-                if(shoppingCart.Count <= 100)
-                {
-                    return shoppingCart.Product.Price50;
-                } else return shoppingCart.Product.Price100;
-            }
+                "6ml" => shoppingCart.Product.Price6ml,
+                "10ml" => shoppingCart.Product.Price10ml,
+                "15ml" => shoppingCart.Product.Price15ml,
+                "20ml" => shoppingCart.Product.Price20ml,
+                _ => shoppingCart.Product.Price6ml // fallback
+            };
         }
     }
 }

@@ -25,17 +25,15 @@ namespace Tryout.DataAccess.Repository
             {
                 objFromDb.Title = obj.Title;
                 objFromDb.Description = obj.Description;
-                objFromDb.Director = obj.Director;
-                objFromDb.IMDBId = obj.IMDBId;
-                objFromDb.ListPrice = obj.ListPrice;
-                objFromDb.Price = obj.Price;
-                objFromDb.Price50 = obj.Price50;
-                objFromDb.Price100 = obj.Price100;
+                objFromDb.InspirationBrand = obj.InspirationBrand;
+                objFromDb.SKU = obj.SKU;
+                objFromDb.Price6ml = obj.Price6ml;
+                objFromDb.Price10ml = obj.Price10ml;
+                objFromDb.Price15ml = obj.Price15ml;
+                objFromDb.Price20ml = obj.Price20ml;             
                 objFromDb.CategoryId = obj.CategoryId;
-                if (obj.ImageUrl != null)
-                {
-                    objFromDb.ImageUrl = obj.ImageUrl;
-                }
+                objFromDb.ProductImages = obj.ProductImages; objFromDb.Title = obj.Title;
+                
             }
         }
     }

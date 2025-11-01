@@ -6,7 +6,7 @@
             <div class="row">
                 <div class="col-12 text-center">
                     <h3 class="text-white text-uppercase">@Model.Product.Title</h3>
-                    <p class="text-white-50 fw-semibold mb-0">by @Model.Product.Director</p>
+                    <p class="text-white-50 fw-semibold mb-0">by @Model.Product.InspirationBrand</p>
                 </div>
             </div>
         </div>
@@ -21,7 +21,49 @@
                 </div>
                 <div class="row">
                     <div class="col-12 col-lg-3 offset-lg-1 text-center mb-3">
-                        <img src="@Model.Product.ImageUrl" width="100%" class="rounded" />
+
+
+
+                        @if (Model.Product.ProductImages != null && Model.Product.ProductImages.Count > 0)
+                        {
+                            <div id="carouselExampleIndicators" class="carousel  slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+
+                                    @foreach (var imageWithIndex in
+                                                                    Model.Product.ProductImages
+                                                                    .Select((image, index) => new { Image = image, Index = index }))
+                                    {
+                                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="@imageWithIndex.Index"
+                                                class="@(imageWithIndex.Index==0 ? "active" : "")" aria-current="true" aria-label="Slide 1"></button>
+                                    }
+
+
+                                </div>
+                                <div class="carousel-inner">
+                                    @foreach (var imageWithIndex in
+                                                                    Model.Product.ProductImages
+                                                                    .Select((image, index) => new { Image = image, Index = index }))
+                                    {
+                                        <div class="@(imageWithIndex.Index==0 ? "carousel-item active" : "carousel-item")">
+                                            <img src="@imageWithIndex.Image.ImageUrl" class="d-block w-100" alt="...">
+                                        </div>
+                                    }
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+
+                        }
+
+
+
+
                     </div>
                     <div class="col-12 col-lg-6 offset-lg-1">
 
@@ -29,9 +71,20 @@
                             <span class="badge">@Model.Product.Category.Description</span>
                         </div>
                         <div class="row ps-2">
-                            <h6 class="text-dark text-opacity-50 ">ISBN : @Model.Product.IMDBId</h6>
+                            <h6 class="text-dark text-opacity-50 ">Product Code : @Model.Product.SKU</h6>
                         </div>
-                        <div class="row ps-2">
+                        <div class="mb-3">
+                            <label asp-for="UnitType" class="form-label fw-semibold">Choose Size</label>
+                            <select asp-for="UnitType" class="form-select" required>
+                                <option value="">-- Select Size --</option>
+                                <option value="6ml">6 ml - ₦@Model.Product.Price6ml</option>
+                                <option value="10ml">10 ml - ₦@Model.Product.Price10ml</option>
+                                <option value="15ml">15 ml - ₦@Model.Product.Price15ml</option>
+                                <option value="20ml">20 ml - ₦@Model.Product.Price20ml</option>
+                            </select>
+                            <span asp-validation-for="UnitType" class="text-danger"></span>
+                        </div>
+                        @* <div class="row ps-2">
                             <h6 class="text-dark text-opacity-50  pb-2">
                                 List Price:
                                 <span class="text-decoration-line-through">
@@ -66,9 +119,9 @@
                             <div class="p-1 col-3 col-lg-2 bg-white text-warning fw-bold">
                                 <div>@Model.Product.Price100.ToString("c")</div>
                             </div>
-                        </div>
+                        </div> *@
                         <div class="row pl-2 my-3">
-                            <p class="text-secondary lh-sm">@Model.Product.Description</p>
+                            <p class="text-secondary lh-sm">@Html.Raw(Model.Product.Description)</p>
                         </div>
                         <div class="row pl-2 mb-3">
                             <div class="col-md-4">
@@ -77,7 +130,7 @@
                                           id="inputGroup-sizing-default">
                                         Count
                                     </span>
-                                    <input asp-for="Count" type="number" value="1" class="form-control text-end"
+                                    <input asp-for="Count" type="number" min="1" value="1" class="form-control text-end"
                                            aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" />
 
                                 </div>

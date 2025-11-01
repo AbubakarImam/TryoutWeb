@@ -17,34 +17,34 @@ namespace Tryout.Models
         public string Title { get; set; }
         public string Description { get; set; }
         [Required]
-        public string IMDBId { get; set; }
+        public string SKU { get; set; }
         [Required]
-        public string Director { get; set; }
+        public string InspirationBrand { get; set; }
         [Required]
-        [Display(Name = "List Price")]
+        [Display(Name = "Price (6 ml)")]
         [Range(1, 1000)]
-        public double ListPrice { get; set; }
+        public double Price6ml { get; set; }
 
         [Required]
-        [Display(Name = "Price 1 - 50")]
+        [Display(Name = "Price (10 ml)")]
         [Range(1, 1000)]
-        public double Price { get; set; }
+        public double Price10ml { get; set; }
 
         [Required]
-        [Display(Name = "Price for 50+")]
+        [Display(Name = "Price (15 ml)")]
         [Range(1, 1000)]
-        public double Price50 { get; set; }
+        public double Price15ml { get; set; }
 
         [Required]
-        [Display(Name = "Price for 100+")]
+        [Display(Name = "Price (20 ml)")]
         [Range(1, 1000)]
-        public double Price100 { get; set; }
+        public double Price20ml { get; set; }
 
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         [ValidateNever]
         public Category Category { get; set; }
         [ValidateNever]
-        public string ImageUrl { get; set; }
+        public List<ProductImage> ProductImages { get; set; }
     }
 }

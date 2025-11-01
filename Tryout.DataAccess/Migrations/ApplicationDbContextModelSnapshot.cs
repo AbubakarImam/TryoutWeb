@@ -253,20 +253,20 @@ namespace Tryout.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Action",
-                            Name = "Bond"
+                            Description = "Men's Fresh/Aquatic",
+                            Name = "Aqua Di Gio Type"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Action",
-                            Name = "Fast"
+                            Description = "Women's Floral/Sweet",
+                            Name = "La Vie Est Belle Type"
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Animation",
-                            Name = "Shrek"
+                            Description = "Unisex Woody/Oriental",
+                            Name = "Baccarat Rouge 540 Type"
                         });
                 });
 
@@ -416,29 +416,25 @@ namespace Tryout.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Director")
+                    b.Property<string>("InspirationBrand")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("IMDBId")
+                    b.Property<double>("Price10ml")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Price15ml")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Price20ml")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Price6ml")
+                        .HasColumnType("float");
+
+                    b.Property<string>("SKU")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("ListPrice")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Price100")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Price50")
-                        .HasColumnType("float");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -455,86 +451,102 @@ namespace Tryout.DataAccess.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            Description = "A mind-bending journey through time and memory, where every decision changes the future. Intricately woven narrative that challenges perception.",
-                            Director = "Christopher Nolan",
-                            IMDBId = "IMD12345601",
-                            ImageUrl = "",
-                            ListPrice = 120.0,
-                            Price = 110.0,
-                            Price100 = 90.0,
-                            Price50 = 100.0,
-                            Title = "Echoes of Tomorrow"
+                            Description = "A clean, aquatic scent with notes of marine, bergamot, and cedar. Perfect for daily wear and warm weather.",
+                            InspirationBrand = "Inspired by Acqua Di Gio",
+                            Price10ml = 28.0,
+                            Price15ml = 38.0,
+                            Price20ml = 45.0,
+                            Price6ml = 18.0,
+                            SKU = "PERFUME0001",
+                            Title = "Ocean Breeze Elixir (6ml/10ml/15ml/20ml)"
                         },
                         new
                         {
                             Id = 2,
                             CategoryId = 2,
-                            Description = "An emotional sci-fi drama exploring isolation and humanity’s survival on a distant silent planet. Rich visuals and deep character arcs.",
-                            Director = "Patricia Jenkins",
-                            IMDBId = "IMD12345602",
-                            ImageUrl = "",
-                            ListPrice = 95.0,
-                            Price = 85.0,
-                            Price100 = 70.0,
-                            Price50 = 80.0,
-                            Title = "Silent Horizon"
+                            Description = "An elegant, gourmand floral with notes of black currant, praline, and vanilla. A timeless, sweet classic.",
+                            InspirationBrand = "Inspired by La Vie Est Belle",
+                            Price10ml = 34.0,
+                            Price15ml = 46.0,
+                            Price20ml = 55.0,
+                            Price6ml = 22.0,
+                            SKU = "PERFUME0002",
+                            Title = "Jasmine & Iris Dream (6ml/10ml/15ml/20ml)"
                         },
                         new
                         {
                             Id = 3,
-                            CategoryId = 1,
-                            Description = "A high-octane cyberpunk thriller set in a city where neon lights hide dark secrets. Fast-paced and visually immersive.",
-                            Director = "Ryan Coogler",
-                            IMDBId = "IMD12345603",
-                            ImageUrl = "",
-                            ListPrice = 100.0,
-                            Price = 90.0,
-                            Price100 = 75.0,
-                            Price50 = 85.0,
-                            Title = "Neon Drift"
+                            CategoryId = 3,
+                            Description = "A radiant and sophisticated blend of saffron, cedarwood, and ambergris. A luxury, signature scent.",
+                            InspirationBrand = "Inspired by Baccarat Rouge 540",
+                            Price10ml = 42.0,
+                            Price15ml = 58.0,
+                            Price20ml = 69.0,
+                            Price6ml = 28.0,
+                            SKU = "PERFUME0003",
+                            Title = "Saffron Silk (6ml/10ml/15ml/20ml)"
                         },
                         new
                         {
                             Id = 4,
-                            CategoryId = 3,
-                            Description = "A haunting mystery thriller unraveling a ghost story in a quiet seaside town. Gripping from start to finish with stunning cinematography.",
-                            Director = "Greta Gerwig",
-                            IMDBId = "IMD12345604",
-                            ImageUrl = "",
-                            ListPrice = 80.0,
-                            Price = 70.0,
-                            Price100 = 60.0,
-                            Price50 = 65.0,
-                            Title = "Whispers in the Fog"
+                            CategoryId = 1,
+                            Description = "An earthy, woody, and spicy scent with prominent notes of vetiver and patchouli. For the sophisticated person.",
+                            InspirationBrand = "Inspired by Terre d'Hermès",
+                            Price10ml = 31.0,
+                            Price15ml = 42.0,
+                            Price20ml = 50.0,
+                            Price6ml = 20.0,
+                            SKU = "PERFUME0004",
+                            Title = "Dark Vetiver Mystery (6ml/10ml/15ml/20ml)"
                         },
                         new
                         {
                             Id = 5,
-                            CategoryId = 3,
-                            Description = "An epic space battle saga that blends stunning VFX with a tale of resistance and legacy. Perfect for action and sci-fi lovers.",
-                            Director = "James Cameron",
-                            IMDBId = "IMD12345605",
-                            ImageUrl = "",
-                            ListPrice = 110.0,
-                            Price = 100.0,
-                            Price100 = 85.0,
-                            Price50 = 95.0,
-                            Title = "Iron Skies: Rebirth"
+                            CategoryId = 2,
+                            Description = "A captivating contrast of white florals and black coffee, creating an addictive, sensual, and energetic fragrance.",
+                            InspirationBrand = "Inspired by Black Opium",
+                            Price10ml = 38.0,
+                            Price15ml = 52.0,
+                            Price20ml = 62.0,
+                            Price6ml = 25.0,
+                            SKU = "PERFUME0005",
+                            Title = "Midnight Bloom (6ml/10ml/15ml/20ml)"
                         },
                         new
                         {
                             Id = 6,
-                            CategoryId = 2,
-                            Description = "A poetic drama that explores love, grief, and memory across generations, beautifully captured in slow, moody frames.",
-                            Director = "Sofia Coppola",
-                            IMDBId = "IMD12345606",
-                            ImageUrl = "",
-                            ListPrice = 70.0,
-                            Price = 65.0,
-                            Price100 = 55.0,
-                            Price50 = 60.0,
-                            Title = "Velvet Ashes"
+                            CategoryId = 3,
+                            Description = "A rich, warm, and iconic oriental blend of tobacco leaf, vanilla, and spice. Intense and long-lasting.",
+                            InspirationBrand = "Inspired by Tobacco Vanille",
+                            Price10ml = 45.0,
+                            Price15ml = 62.0,
+                            Price20ml = 75.0,
+                            Price6ml = 30.0,
+                            SKU = "PERFUME0006",
+                            Title = "Warm Spice Trail (6ml/10ml/15ml/20ml)"
                         });
+                });
+
+            modelBuilder.Entity("Tryout.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("Tryout.Models.ShoppingCart", b =>
@@ -554,6 +566,10 @@ namespace Tryout.DataAccess.Migrations
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -684,6 +700,17 @@ namespace Tryout.DataAccess.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Tryout.Models.ProductImage", b =>
+                {
+                    b.HasOne("Tryout.Models.Product", "product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("product");
+                });
+
             modelBuilder.Entity("Tryout.Models.ShoppingCart", b =>
                 {
                     b.HasOne("Tryout.Models.ApplicationUser", "ApplicationUser")
@@ -710,6 +737,11 @@ namespace Tryout.DataAccess.Migrations
                         .HasForeignKey("CompanyId");
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Tryout.Models.Product", b =>
+                {
+                    b.Navigation("ProductImages");
                 });
 #pragma warning restore 612, 618
         }

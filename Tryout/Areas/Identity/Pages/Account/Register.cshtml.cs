@@ -128,14 +128,6 @@ namespace Tryout.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if(!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult())
-            {
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Company)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Employee)).GetAwaiter().GetResult();
-            }
-
             Input = new()
             {
                 RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
@@ -199,9 +191,13 @@ namespace Tryout.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
-
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    var body = $@"
+<div style='text-align:center;'>
+        <img src='https://res.cloudinary.com/dzl44lobc/image/upload/v1761965012/kamshiLogo_nxgi0y.svg' alt='Kamshi Store Logo' style='width:150px; height:auto;' />
+    </div>
+<p>Please confirm your account by <a href='{{HtmlEncoder.Default.Encode(callbackUrl)}}'>clicking here</a></p>
+";
+                    await _emailSender.SendEmailAsync("Confirm your email", Input.Email, body);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -209,7 +205,15 @@ namespace Tryout.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        if (User.IsInRole(SD.Role_Admin))
+                        {
+                            TempData["success"] = "New User Created Successfully";
+                        }
+                        else
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }

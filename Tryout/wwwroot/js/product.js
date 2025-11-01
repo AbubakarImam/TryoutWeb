@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         columns: [
             { data: "title", width: "25%" },
-            { data: "imdbId", width: "15%" },
-            { data: "listPrice", width: "10%" },
-            { data: "director", width: "15%" },
+            { data: "sku", width: "15%" },
+            { data: "Price6ml", width: "10%" },
+            { data: "InspirationBrand", width: "15%" },
             { data: "category.description", width: "10%" }, // show Category name
             {
                 data: "id",

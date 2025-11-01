@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
@@ -18,16 +20,17 @@ namespace Tryout.Areas.Admin.Controllers
     [Authorize]
     public class OrderController : Controller
     {
-
+        private readonly IEmailSender _emailSender;
         private readonly IUnitOfWork _unitOfWork;
         private readonly PaystackSetting _paystackSetting;
 
         [BindProperty]
         public OrderVM OrderVM { get; set; }
-        public OrderController(IUnitOfWork unitOfWork, IOptions<PaystackSetting> paystackSetting)
+        public OrderController(IUnitOfWork unitOfWork, IEmailSender emailSender, IOptions<PaystackSetting> paystackSetting)
         {
             _unitOfWork = unitOfWork;
             _paystackSetting = paystackSetting.Value;
+            _emailSender = emailSender;
 
         }
 
@@ -87,10 +90,10 @@ namespace Tryout.Areas.Admin.Controllers
 
         [HttpPost]
         [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Employee)]
-        public IActionResult ShipOrder()
+        public async Task<IActionResult> ShipOrder()
         {
 
-            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == OrderVM.OrderHeader.Id);
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == OrderVM.OrderHeader.Id, includeProperties: "ApplicationUser");
             orderHeader.TrackingNumber = OrderVM.OrderHeader.TrackingNumber;
             orderHeader.Carrier = OrderVM.OrderHeader.Carrier;
             orderHeader.OrderStatus = SD.StatusShipped;
@@ -102,7 +105,20 @@ namespace Tryout.Areas.Admin.Controllers
 
             _unitOfWork.OrderHeader.Update(orderHeader);
             _unitOfWork.Save();
+            string subject = $"Your Order #{orderHeader.Id} has been shipped!";
+            string body = $@"
+ <div style='text-align:center;'>
+        <img src='https://res.cloudinary.com/dzl44lobc/image/upload/v1761965012/kamshiLogo_nxgi0y.svg' alt='Kamshi Store Logo' style='width:150px; height:auto;' />
+    </div>
+        <h2>Your order is on the way 🚚</h2>
+        <p>Hi {orderHeader.ApplicationUser.Name},</p>
+        <p>Your order <strong>#{orderHeader.Id}</strong> has been shipped and will arrive soon.</p>
+        <p>Thank you for shopping with Kamshi Store!</p>
+    ";
+
+            await _emailSender.SendEmailAsync(subject, orderHeader.ApplicationUser.Email, body); 
             TempData["Success"] = "Order Shipped Successfully.";
+
             return RedirectToAction(nameof(Details), new { orderId = OrderVM.OrderHeader.Id });
         }
         [HttpPost]

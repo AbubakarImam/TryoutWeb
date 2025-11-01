@@ -20,6 +20,10 @@ namespace Tryout.Models
         [Range(1, 1000, ErrorMessage = "Please enter a value between 1 and 1000")]
         public int Count { get; set; }
 
+        [Required]
+        [Display(Name = "Unit Type")]
+        public string UnitType { get; set; } // "6ml", "10ml", "15ml", "20ml"
+
         public string ApplicationUserId { get; set; }
         [ForeignKey("ApplicationUserId")]
         [ValidateNever]

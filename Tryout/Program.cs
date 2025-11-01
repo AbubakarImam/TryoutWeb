@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Tryout.DataAccess.Data;
+using Tryout.DataAccess.DbInitializer;
 using Tryout.DataAccess.Repository;
 using Tryout.DataAccess.Repository.IRepository;
 using Tryout.Models;
@@ -22,6 +23,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSto
 
 // inside builder setup:
 builder.Services.Configure<PaystackSetting>(builder.Configuration.GetSection("Paystack"));
+builder.Services.Configure<ResendSetting>(builder.Configuration.GetSection("Resend"));
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -31,6 +33,30 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
+// after builder.Services.AddIdentity<...>().AddEntityFrameworkStores<ApplicationDbContext>() etc.
+
+builder.Services.AddAuthentication()
+    .AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+        // optional extras:
+        googleOptions.Scope.Add("profile");
+        googleOptions.Scope.Add("email");
+        googleOptions.SaveTokens = true; // saves tokens to authentication properties if you want to access them
+        // googleOptions.SignInScheme = IdentityConstants.ExternalScheme; // default with Identity
+    });
+
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(100);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -53,9 +79,20 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.UseSession();
+SeedDatabase();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+void SeedDatabase()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        dbInitializer.Initialize();
+    }
+}

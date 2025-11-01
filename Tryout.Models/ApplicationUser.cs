@@ -19,10 +19,12 @@ namespace Tryout.Models
         public string? City { get; set; }
         public string? State { get; set; }
         public string? PostalCode { get; set; }
-        public int? CompanyId { get; set; }   // foreign key (nullable if not all users belong to a company)
+        public int? CompanyId { get; set; }   
         [ForeignKey("CompanyId")]
         [ValidateNever]
-        public Company Company { get; set; }  // navigation property
+        public Company? Company { get; set; }
+        [NotMapped]
+        public string Role {  get; set; }
     }
 
 }

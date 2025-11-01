@@ -56,7 +56,7 @@ namespace Tryout.DataAccess.Repository
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach(var property in includeProperties
-                    .Split(";", StringSplitOptions.RemoveEmptyEntries))
+                    .Split(",", StringSplitOptions.RemoveEmptyEntries))
                 {
                     query = query.Include(property);
                 }
